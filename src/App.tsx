@@ -255,7 +255,7 @@ const VideoScriptApp = () => {
           // 2. Kirim ke Google Gemini (Versi 1.5 Flash)
           // JANGAN LUPA: Tempel API Key Anda di bawah ini!
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
             {
               method: 'POST',
               headers: {
