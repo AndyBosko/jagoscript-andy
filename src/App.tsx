@@ -244,54 +244,39 @@ const VideoScriptApp = () => {
     try {
       const callApi = async (retryCount = 0) => {
         try {
-          // 1. Siapkan Pesan (Teks)
           const contentParts: any[] = [{ text: userPrompt }];
-          
-          // Masukkan gambar jika ada (opsional, abaikan error merah di sini jika ada)
-          if (imagePart) {
-            contentParts.push(imagePart);
-          }
+          if (imagePart) contentParts.push(imagePart);
     
-          // 2. Kirim ke Google Gemini (Versi 1.5 Flash)
-          // JANGAN LUPA: Tempel API Key Anda di bawah ini!
+          // --- PERHATIKAN BAGIAN INI ---
+          // 1. Kita pakai model 'gemini-1.5-flash' (resmi)
+          // 2. PASTE KUNCI BARU ANDA DI BAWAH (Ganti tulisan MASUKKAN_KEY_BARU)
+          const apiKey = "AIzaSyBcNHUqDZ_y2Ljvww2RY97fEmnUrdjdIVs"; 
+          
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
             {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                contents: [{ parts: contentParts }],
-                // Bagian instruksi sistem (opsional)
-                 system_instruction: {
-                    parts: [{ text: systemInstruction }]
-                }
-              }),
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: contentParts }] }),
             }
           );
     
-          // 3. Cek Error dari Google
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error?.message || 'Gagal menghubungi Google');
+            throw new Error(errorData.error?.message || 'Gagal koneksi ke Google');
           }
     
-          // 4. Ambil Data
           const data = await response.json();
           let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+          if (!textResponse) throw new Error("Tidak ada jawaban.");
           
-          if (!textResponse) throw new Error("Google tidak memberikan jawaban teks.");
-    
-          // 5. Bersihkan Format JSON (Hapus ```json dan ```)
+          // Bersihkan format
           textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-    
           return JSON.parse(textResponse);
     
         } catch (error) {
-          console.error("Error fetching script:", error);
-          // Munculkan Pop-up Error agar kita tahu apa masalahnya
-          alert(`Gagal: ${error}`); 
+          alert(`Gagal: ${error}`);
           return null;
         }
       };
