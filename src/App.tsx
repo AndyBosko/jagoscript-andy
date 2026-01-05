@@ -250,7 +250,7 @@ const VideoScriptApp = () => {
           // --- PERHATIKAN BAGIAN INI ---
           // 1. Kita pakai model 'gemini-1.5-flash' (resmi)
           // 2. PASTE KUNCI BARU ANDA DI BAWAH (Ganti tulisan MASUKKAN_KEY_BARU)
-          const apiKey = "AIzaSyBcNHUqDZ_y2Ljvww2RY97fEmnUrdjdIVs"; 
+          const apiKey = "AIzaSyDKXVJpHiBRZSIWEUM04GcLLIb6xkjqP_Y"; 
           
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
