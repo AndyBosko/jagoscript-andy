@@ -27,7 +27,7 @@ import {
 // --- KONFIGURASI ---
 // Masukkan API Key Anda di sini. 
 // Untuk keamanan, sebaiknya gunakan import.meta.env.VITE_GEMINI_API_KEY
-const API_KEY = "MASUKKAN_KEY_ANDA_DISINI"; 
+const API_KEY = "AIzaSyDKXVJpHiBRZSIWEUM04GcLLIb6xkjqP_Y"; 
 
 const VideoScriptApp = () => {
   const [mode, setMode] = useState('topic'); // 'topic', 'idea', 'image'
