@@ -274,30 +274,35 @@ const VideoScriptApp = () => {
           // 3. Cek Apakah Berhasil?
           const data = await response.json();
     
-          if (!response.ok) {
-            // Jika Gagal, Munculkan Pesan Error di Layar (Pop-up)
-            alert(`Gagal: ${data.error?.message || 'Terjadi kesalahan misterius'}`);
-            throw new Error(data.error?.message);
-          }
-    
-          // 4. Jika Berhasil, Ambil Isinya
-          const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          
-          // Bersihkan format JSON
-          const cleanJson = textResponse
-            .replace(/```json/g, '')
-            .replace(/```/g, '')
-            .trim();
-    
-          return JSON.parse(cleanJson);
-    
-        } catch (error) {
-          console.error("Error fetching script:", error);
-          // Munculkan error di layar agar kita tahu penyebabnya
-          alert(`Error Aplikasi: ${error}`); 
-          return null;
-        }
-      };
+          // --- MULAI SALIN DARI SINI (Tempel di bawah bagian fetch) ---
+
+      // 1. Cek Apakah Koneksi Sukses?
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Gagal menghubungi Google');
+      }
+
+      const data = await response.json();
+
+      // 2. AMBIL TEKS JAWABAN
+      let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!textResponse) throw new Error("Google tidak memberikan jawaban teks.");
+
+      // 3. PEMBERSIH "BUNGKUS" (INI YANG KURANG!)
+      // Kita hapus tulisan ```json dan ``` yang sering bikin error
+      textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      // 4. UBAH JADI DATA APLIKASI
+      return JSON.parse(textResponse);
+
+    } catch (error) {
+      console.error("Error:", error);
+      // Munculkan pesan error agar kita tahu apa salahnya
+      alert(`Gagal: ${error}`); 
+      return null;
+    }
+  };
 
       const result = await callApi();
       setGeneratedScript(result);
