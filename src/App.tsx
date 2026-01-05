@@ -244,16 +244,16 @@ const VideoScriptApp = () => {
     try {
       const callApi = async (retryCount = 0) => {
         try {
-          // 1. Siapkan Pesan (Teks & Gambar)
+          // 1. Siapkan Pesan (Teks)
           const contentParts: any[] = [{ text: userPrompt }];
           
-          // Masukkan gambar jika ada
+          // Masukkan gambar jika ada (opsional, abaikan error merah di sini jika ada)
           if (imagePart) {
             contentParts.push(imagePart);
           }
     
-          // 2. Kirim ke Google Gemini (Versi 1.5 Flash - Paling Stabil)
-          // Perhatikan: Pastikan tidak ada spasi di dalam tanda kutip URL
+          // 2. Kirim ke Google Gemini (Versi 1.5 Flash)
+          // JANGAN LUPA: Tempel API Key Anda di bawah ini!
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
             {
@@ -263,46 +263,38 @@ const VideoScriptApp = () => {
               },
               body: JSON.stringify({
                 contents: [{ parts: contentParts }],
-                // Kita pindahkan instruksi sistem agar lebih aman
-                system_instruction: {
+                // Bagian instruksi sistem (opsional)
+                 system_instruction: {
                     parts: [{ text: systemInstruction }]
                 }
               }),
             }
           );
     
-          // 3. Cek Apakah Berhasil?
-          const data = await response.json();
+          // 3. Cek Error dari Google
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || 'Gagal menghubungi Google');
+          }
     
-          // --- MULAI SALIN DARI SINI (Tempel di bawah bagian fetch) ---
-
-      // 1. Cek Apakah Koneksi Sukses?
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Gagal menghubungi Google');
-      }
-
-      const data = await response.json();
-
-      // 2. AMBIL TEKS JAWABAN
-      let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (!textResponse) throw new Error("Google tidak memberikan jawaban teks.");
-
-      // 3. PEMBERSIH "BUNGKUS" (INI YANG KURANG!)
-      // Kita hapus tulisan ```json dan ``` yang sering bikin error
-      textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-
-      // 4. UBAH JADI DATA APLIKASI
-      return JSON.parse(textResponse);
-
-    } catch (error) {
-      console.error("Error:", error);
-      // Munculkan pesan error agar kita tahu apa salahnya
-      alert(`Gagal: ${error}`); 
-      return null;
-    }
-  };
+          // 4. Ambil Data
+          const data = await response.json();
+          let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          
+          if (!textResponse) throw new Error("Google tidak memberikan jawaban teks.");
+    
+          // 5. Bersihkan Format JSON (Hapus ```json dan ```)
+          textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+          return JSON.parse(textResponse);
+    
+        } catch (error) {
+          console.error("Error fetching script:", error);
+          // Munculkan Pop-up Error agar kita tahu apa masalahnya
+          alert(`Gagal: ${error}`); 
+          return null;
+        }
+      };
 
       const result = await callApi();
       setGeneratedScript(result);
