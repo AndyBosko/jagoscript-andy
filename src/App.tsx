@@ -244,33 +244,58 @@ const VideoScriptApp = () => {
     try {
       const callApi = async (retryCount = 0) => {
         try {
-          const contentParts = [{ text: userPrompt }];
-          if (imagePart) contentParts.push(imagePart);
-
-          // GANTI DENGAN INI (Versi 1.5 Flash yang Stabil):
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: userPrompt }] }],
-            // Hapus bagian systemInstruction jika bikin error, tapi coba biarkan dulu
-          }),
-        }
-      );
-
-          if (!response.ok) throw new Error('API Error');
-          const data = await response.json();
-          return JSON.parse(data.candidates[0].content.parts[0].text);
-        } catch (err) {
-          if (retryCount < 3) {
-            await new Promise((r) => setTimeout(r, 1000 * (retryCount + 1)));
-            return callApi(retryCount + 1);
+          // 1. Siapkan Pesan (Teks & Gambar)
+          const contentParts: any[] = [{ text: userPrompt }];
+          
+          // Masukkan gambar jika ada
+          if (imagePart) {
+            contentParts.push(imagePart);
           }
-          throw err;
+    
+          // 2. Kirim ke Google Gemini (Versi 1.5 Flash - Paling Stabil)
+          // Perhatikan: Pastikan tidak ada spasi di dalam tanda kutip URL
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCnhDJoR6hJXsgd5J--Fczsl5bEvuq4j8c`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                contents: [{ parts: contentParts }],
+                // Kita pindahkan instruksi sistem agar lebih aman
+                system_instruction: {
+                    parts: [{ text: systemInstruction }]
+                }
+              }),
+            }
+          );
+    
+          // 3. Cek Apakah Berhasil?
+          const data = await response.json();
+    
+          if (!response.ok) {
+            // Jika Gagal, Munculkan Pesan Error di Layar (Pop-up)
+            alert(`Gagal: ${data.error?.message || 'Terjadi kesalahan misterius'}`);
+            throw new Error(data.error?.message);
+          }
+    
+          // 4. Jika Berhasil, Ambil Isinya
+          const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          
+          // Bersihkan format JSON
+          const cleanJson = textResponse
+            .replace(/```json/g, '')
+            .replace(/```/g, '')
+            .trim();
+    
+          return JSON.parse(cleanJson);
+    
+        } catch (error) {
+          console.error("Error fetching script:", error);
+          // Munculkan error di layar agar kita tahu penyebabnya
+          alert(`Error Aplikasi: ${error}`); 
+          return null;
         }
       };
 
